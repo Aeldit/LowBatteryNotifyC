@@ -185,7 +185,6 @@ int main(void)
                     ++has_notified_20;
                     notify(percentage);
                 }
-                notify(percentage);
             }
         }
         thrd_sleep(&(struct timespec){ .tv_sec = 20 }, NULL); // sleep 20 sec
