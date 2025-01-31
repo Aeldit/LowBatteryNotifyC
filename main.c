@@ -1,0 +1,188 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <threads.h>
+
+#define IS_LAPTOP_FILE_PATH ("/sys/class/dmi/id/chassis_type")
+#define STATUS_FILE_PATH ("/sys/class/power_supply/BAT0/status")
+#define CAPACITY_FILE_PATH ("/sys/class/power_supply/BAT0/capacity")
+
+char streq(char *a, char *b, unsigned char b_len)
+{
+    if (!a || !b)
+    {
+        return 0;
+    }
+
+    unsigned char a_len = 0;
+    while (a[a_len])
+    {
+        ++a_len;
+    }
+
+    if (a_len != b_len)
+    {
+        return 0;
+    }
+
+    unsigned i = 0;
+    while (a[i] && b[i])
+    {
+        if (a[i] != b[i])
+        {
+            return 0;
+        }
+        ++i;
+    }
+    return 1;
+}
+
+char atoc(char b[4])
+{
+    if (!b)
+    {
+        return -1;
+    }
+    unsigned char res = 0;
+    if ('0' <= b[0] && b[0] <= '9')
+    {
+        res = b[0] - '0';
+    }
+    if ('0' <= b[1] && b[1] <= '9')
+    {
+        res *= 10;
+        res += b[1] - '0';
+    }
+    if ('0' <= b[2] && b[2] <= '9')
+    {
+        res *= 10;
+        res += b[2] - '0';
+    }
+    return res;
+}
+
+/**
+** \returns 1 if the current computer is a laptop or a notebook, 0 otherwise
+*/
+char is_laptop()
+{
+    FILE *is_laptop_file = fopen(IS_LAPTOP_FILE_PATH, "r");
+    if (!is_laptop_file)
+    {
+        return 1;
+    }
+
+    struct stat st;
+    stat(IS_LAPTOP_FILE_PATH, &st);
+    if (st.st_size >= 3)
+    {
+        char buff[3] = { 0 };
+        fread(buff, sizeof(char), 2, is_laptop_file);
+        fclose(is_laptop_file);
+        return buff[0] == '9' || (buff[0] == '1' || buff[1] == '0');
+    }
+    fclose(is_laptop_file);
+    return 0;
+}
+
+/**
+** \returns 0 => Error
+**          1 => Discharging
+**          2 => Charging
+**          3 => Full
+*/
+unsigned char is_discharging()
+{
+    FILE *status_file = fopen(STATUS_FILE_PATH, "r");
+    if (!status_file)
+    {
+        return 0;
+    }
+
+    struct stat st;
+    stat(STATUS_FILE_PATH, &st);
+    if (st.st_size < 11)
+    {
+        fclose(status_file);
+        return 0;
+    }
+
+    // We read 11 chars using fread, so the 12 here ensures NULL termination of
+    // the string
+    char status_str[12] = { 0 };
+    fread(status_str, sizeof(char), 11, status_file);
+    fclose(status_file);
+    return streq(status_str, "Discharging", 11);
+}
+
+char get_battery_percentage()
+{
+    FILE *capacity_file = fopen(CAPACITY_FILE_PATH, "r");
+    if (!capacity_file)
+    {
+        return -1;
+    }
+
+    struct stat st;
+    stat(CAPACITY_FILE_PATH, &st);
+    if (st.st_size >= 3)
+    {
+        char b[4] = { 0 };
+        fread(b, sizeof(char), 3, capacity_file);
+        fclose(capacity_file);
+        return atoc(b);
+    }
+    fclose(capacity_file);
+    return -1;
+}
+
+void notify(unsigned char percentage)
+{
+    // 82 = 78 + at most 3 for the percentage + '\0'
+    char b[79] = { 0 };
+    snprintf(b, 78,
+             "notify-send -a \"LowBatteryNotify\" -u CRITICAL "
+             "-t 5000 -p \"Battery Low (%u%%)\"",
+             percentage);
+    system(b);
+}
+
+int main(void)
+{
+    if (!is_laptop())
+    {
+        return 1;
+    }
+
+    char has_notified_5 = 0;
+    char has_notified_10 = 0;
+    char has_notified_20 = 0;
+    while (1)
+    {
+        if (!is_discharging())
+        {
+            has_notified_5 = has_notified_10 = has_notified_20 = 0;
+        }
+        else
+        {
+            unsigned char percentage = get_battery_percentage();
+            if (percentage <= 5 && !has_notified_5)
+            {
+                ++has_notified_5;
+                notify(percentage);
+            }
+            else if (percentage <= 10 && !has_notified_10)
+            {
+                ++has_notified_10;
+                notify(percentage);
+            }
+            else if (percentage <= 20 && !has_notified_20)
+            {
+                ++has_notified_20;
+                notify(percentage);
+            }
+        }
+        thrd_sleep(&(struct timespec){ .tv_sec = 20 }, NULL); // sleep 1 sec
+    }
+    return 0;
+}
