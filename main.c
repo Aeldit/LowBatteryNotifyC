@@ -184,7 +184,7 @@ int main(void)
                 }
             }
         }
-        thrd_sleep(&(struct timespec){ .tv_sec = 20 }, NULL); // sleep 20 sec
+        thrd_sleep(&(struct timespec){ .tv_sec = 60 }, NULL); // sleep 60 sec
     }
     return 0;
 }
