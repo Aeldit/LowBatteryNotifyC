@@ -88,10 +88,7 @@ char is_laptop()
 }
 
 /**
-** \returns 0 => Error
-**          1 => Discharging
-**          2 => Charging
-**          3 => Full
+** \returns Whether the battery is discharging or not
 */
 unsigned char is_discharging()
 {
