@@ -43,6 +43,7 @@ char atoc(char b[4])
     {
         return -1;
     }
+
     unsigned char res = 0;
     if ('0' <= b[0] && b[0] <= '9')
     {
@@ -69,20 +70,21 @@ char is_laptop()
     FILE *is_laptop_file = fopen(IS_LAPTOP_FILE_PATH, "r");
     if (!is_laptop_file)
     {
-        return 1;
+        return 0;
     }
 
     struct stat st;
     stat(IS_LAPTOP_FILE_PATH, &st);
-    if (st.st_size >= 3)
+    if (st.st_size < 3)
     {
-        char buff[3] = { 0 };
-        fread(buff, sizeof(char), 2, is_laptop_file);
         fclose(is_laptop_file);
-        return buff[0] == '9' || (buff[0] == '1' || buff[1] == '0');
+        return 0;
     }
+
+    char buff[3] = { 0 };
+    fread(buff, sizeof(char), 2, is_laptop_file);
     fclose(is_laptop_file);
-    return 0;
+    return buff[0] == '9' || (buff[0] == '1' && buff[1] == '0');
 }
 
 /**
@@ -125,20 +127,20 @@ char get_battery_percentage()
 
     struct stat st;
     stat(CAPACITY_FILE_PATH, &st);
-    if (st.st_size >= 3)
+    if (st.st_size < 3)
     {
-        char b[4] = { 0 };
-        fread(b, sizeof(char), 3, capacity_file);
         fclose(capacity_file);
-        return atoc(b);
+        return -1;
     }
+
+    char b[4] = { 0 };
+    fread(b, sizeof(char), 3, capacity_file);
     fclose(capacity_file);
-    return -1;
+    return atoc(b);
 }
 
 void notify(unsigned char percentage)
 {
-    // 82 = 78 + at most 3 for the percentage + '\0'
     char b[79] = { 0 };
     snprintf(b, 78,
              "notify-send -a \"LowBatteryNotify\" -u CRITICAL "
@@ -165,24 +167,28 @@ int main(void)
         }
         else
         {
-            unsigned char percentage = get_battery_percentage();
-            if (percentage <= 5 && !has_notified_5)
+            char percentage = get_battery_percentage();
+            if (percentage != -1)
             {
-                ++has_notified_5;
-                notify(percentage);
-            }
-            else if (percentage <= 10 && !has_notified_10)
-            {
-                ++has_notified_10;
-                notify(percentage);
-            }
-            else if (percentage <= 20 && !has_notified_20)
-            {
-                ++has_notified_20;
+                if (percentage <= 5 && !has_notified_5)
+                {
+                    ++has_notified_5;
+                    notify(percentage);
+                }
+                else if (percentage <= 10 && !has_notified_10)
+                {
+                    ++has_notified_10;
+                    notify(percentage);
+                }
+                else if (percentage <= 20 && !has_notified_20)
+                {
+                    ++has_notified_20;
+                    notify(percentage);
+                }
                 notify(percentage);
             }
         }
-        thrd_sleep(&(struct timespec){ .tv_sec = 20 }, NULL); // sleep 1 sec
+        thrd_sleep(&(struct timespec){ .tv_sec = 20 }, NULL); // sleep 20 sec
     }
     return 0;
 }
