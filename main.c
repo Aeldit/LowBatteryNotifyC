@@ -67,17 +67,16 @@ char atoc(char b[4])
 */
 char is_laptop()
 {
-    FILE *is_laptop_file = fopen(IS_LAPTOP_FILE_PATH, "r");
-    if (!is_laptop_file)
-    {
-        return 0;
-    }
-
     struct stat st;
     stat(IS_LAPTOP_FILE_PATH, &st);
     if (st.st_size < 3)
     {
-        fclose(is_laptop_file);
+        return 0;
+    }
+
+    FILE *is_laptop_file = fopen(IS_LAPTOP_FILE_PATH, "r");
+    if (!is_laptop_file)
+    {
         return 0;
     }
 
@@ -92,17 +91,16 @@ char is_laptop()
 */
 unsigned char is_discharging()
 {
-    FILE *status_file = fopen(STATUS_FILE_PATH, "r");
-    if (!status_file)
-    {
-        return 0;
-    }
-
     struct stat st;
     stat(STATUS_FILE_PATH, &st);
     if (st.st_size < 11)
     {
-        fclose(status_file);
+        return 0;
+    }
+
+    FILE *status_file = fopen(STATUS_FILE_PATH, "r");
+    if (!status_file)
+    {
         return 0;
     }
 
@@ -116,17 +114,16 @@ unsigned char is_discharging()
 
 char get_battery_percentage()
 {
-    FILE *capacity_file = fopen(CAPACITY_FILE_PATH, "r");
-    if (!capacity_file)
-    {
-        return -1;
-    }
-
     struct stat st;
     stat(CAPACITY_FILE_PATH, &st);
     if (st.st_size < 3)
     {
-        fclose(capacity_file);
+        return -1;
+    }
+
+    FILE *capacity_file = fopen(CAPACITY_FILE_PATH, "r");
+    if (!capacity_file)
+    {
         return -1;
     }
 
