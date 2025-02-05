@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <threads.h>
-
-#define IS_LAPTOP_FILE_PATH ("/sys/class/dmi/id/chassis_type")
-#define STATUS_FILE_PATH ("/sys/class/power_supply/BAT0/status")
-#define CAPACITY_FILE_PATH ("/sys/class/power_supply/BAT0/capacity")
 
 char streq(char *a, char *b, unsigned char b_len)
 {
@@ -67,14 +62,7 @@ char atoc(char b[4])
 */
 char is_laptop()
 {
-    struct stat st;
-    stat(IS_LAPTOP_FILE_PATH, &st);
-    if (st.st_size < 3)
-    {
-        return 0;
-    }
-
-    FILE *is_laptop_file = fopen(IS_LAPTOP_FILE_PATH, "r");
+    FILE *is_laptop_file = fopen("/sys/class/dmi/id/chassis_type", "r");
     if (!is_laptop_file)
     {
         return 0;
@@ -91,14 +79,7 @@ char is_laptop()
 */
 unsigned char is_discharging()
 {
-    struct stat st;
-    stat(STATUS_FILE_PATH, &st);
-    if (st.st_size < 11)
-    {
-        return 0;
-    }
-
-    FILE *status_file = fopen(STATUS_FILE_PATH, "r");
+    FILE *status_file = fopen("/sys/class/power_supply/BAT0/status", "r");
     if (!status_file)
     {
         return 0;
@@ -114,14 +95,7 @@ unsigned char is_discharging()
 
 char get_battery_percentage()
 {
-    struct stat st;
-    stat(CAPACITY_FILE_PATH, &st);
-    if (st.st_size < 3)
-    {
-        return -1;
-    }
-
-    FILE *capacity_file = fopen(CAPACITY_FILE_PATH, "r");
+    FILE *capacity_file = fopen("/sys/class/power_supply/BAT0/capacity", "r");
     if (!capacity_file)
     {
         return -1;
