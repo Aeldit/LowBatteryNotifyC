@@ -3,10 +3,10 @@ CFLAGS=-W -Wall -Werror -std=c11 -pedantic
 
 TARGET=low-battery-notifier
 
-all: clean $(TARGET)
+all: build
 	./$(TARGET)
 
-$(TARGET):
+build:
 	$(CC) $(CFLAGS) main.c -o $(TARGET)
 
 clean:
