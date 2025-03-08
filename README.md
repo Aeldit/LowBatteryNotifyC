@@ -2,7 +2,7 @@
 
 Sends a notification to the user's desktop when battery percentage drops bellow `20`, `10` and `5` %.
 
-This program runs in the background but consumes only between `1.2` and
+This program runs in the background but consumes only between `1.1` and
 `1.3` MB of RAM,
 which means that it has a low impact on the battery. Moreover, it checks for battery percentage only once every minute
 
@@ -26,7 +26,7 @@ To build the project, use the following commands:
 ```sh
 git clone https://github.com/Aeldit/LowBatteryNotify.git
 cd LowBatteryNotifyC
-make # builds the project
+make build # builds the project
 ```
 
 The file will then be located at `./low-battery-notifier`
