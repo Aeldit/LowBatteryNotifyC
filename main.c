@@ -2,25 +2,14 @@
 #include <stdlib.h>
 #include <threads.h>
 
-char streq(char *a, char *b, unsigned char b_len)
+char streq(char *a, char *b)
 {
     if (!a || !b)
     {
         return 0;
     }
 
-    unsigned char a_len = 0;
-    while (a[a_len])
-    {
-        ++a_len;
-    }
-
-    if (a_len != b_len)
-    {
-        return 0;
-    }
-
-    unsigned i = 0;
+    unsigned char i = 0;
     while (a[i] && b[i])
     {
         if (a[i] != b[i])
@@ -90,7 +79,7 @@ unsigned char is_discharging()
     char status_str[12] = { 0 };
     fread(status_str, sizeof(char), 11, status_file);
     fclose(status_file);
-    return streq(status_str, "Discharging", 11);
+    return streq(status_str, "Discharging");
 }
 
 char get_battery_percentage()
