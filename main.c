@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <threads.h>
 
-char streq(const char* const a,const char* const b)
+char streq(const char *const a, const char *const b)
 {
     if (!a || !b)
     {
@@ -21,7 +21,7 @@ char streq(const char* const a,const char* const b)
     return 1;
 }
 
-char atoc(const char* const b)
+char atoc(const char *const b)
 {
     if (!b)
     {
