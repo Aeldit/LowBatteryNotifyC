@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <threads.h>
 
-char streq(char *a, char *b)
+char streq(const char* const a,const char* const b)
 {
     if (!a || !b)
     {
@@ -21,14 +21,14 @@ char streq(char *a, char *b)
     return 1;
 }
 
-char atoc(char b[4])
+char atoc(const char* const b)
 {
     if (!b)
     {
         return -1;
     }
 
-    unsigned char res = 0;
+    char res = 0;
     if ('0' <= b[0] && b[0] <= '9')
     {
         res = b[0] - '0';
@@ -66,7 +66,7 @@ char is_laptop()
 /**
 ** \returns Whether the battery is discharging or not
 */
-unsigned char is_discharging()
+char is_discharging()
 {
     FILE *status_file = fopen("/sys/class/power_supply/BAT0/status", "r");
     if (!status_file)
@@ -74,12 +74,10 @@ unsigned char is_discharging()
         return 0;
     }
 
-    // We read 11 chars using fread, so the 12 here ensures NULL termination of
-    // the string
     char status_str[12] = { 0 };
     fread(status_str, sizeof(char), 11, status_file);
     fclose(status_file);
-    return streq(status_str, "Discharging");
+    return streq("Discharging", status_str);
 }
 
 char get_battery_percentage()
