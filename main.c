@@ -2,25 +2,6 @@
 #include <stdlib.h>
 #include <threads.h>
 
-char streq(const char *const a, const char *const b)
-{
-    if (!a || !b)
-    {
-        return 0;
-    }
-
-    unsigned char i = 0;
-    while (a[i] && b[i])
-    {
-        if (a[i] != b[i])
-        {
-            return 0;
-        }
-        ++i;
-    }
-    return 1;
-}
-
 char atoc(const char *const b)
 {
     if (!b)
@@ -77,7 +58,10 @@ char is_discharging()
     char status_str[12] = { 0 };
     fread(status_str, sizeof(char), 11, status_file);
     fclose(status_file);
-    return streq("Discharging", status_str);
+    return status_str[0] == 'D' && status_str[1] == 'i' && status_str[2] == 's'
+        && status_str[3] == 'c' && status_str[4] == 'h' && status_str[5] == 'a'
+        && status_str[6] == 'r' && status_str[7] == 'g' && status_str[8] == 'i'
+        && status_str[9] == 'n' && status_str[1] == 'g';
 }
 
 char get_battery_percentage()
@@ -97,10 +81,12 @@ char get_battery_percentage()
 void notify(unsigned char percentage)
 {
     char b[79] = { 0 };
-    snprintf(b, 78,
-             "notify-send -a \"LowBatteryNotify\" -u CRITICAL "
-             "-t 5000 -p \"Battery Low (%u%%)\"",
-             percentage);
+    snprintf(
+        b, 78,
+        "notify-send -a \"LowBatteryNotify\" -u CRITICAL "
+        "-t 5000 -p \"Battery Low (%u%%)\"",
+        percentage
+    );
     system(b);
 }
 
@@ -111,7 +97,7 @@ int main(void)
         return 1;
     }
 
-    char has_notified_5 = 0;
+    char has_notified_5  = 0;
     char has_notified_10 = 0;
     char has_notified_20 = 0;
     while (1)
