@@ -61,7 +61,7 @@ char is_discharging()
     return status_str[0] == 'D' && status_str[1] == 'i' && status_str[2] == 's'
         && status_str[3] == 'c' && status_str[4] == 'h' && status_str[5] == 'a'
         && status_str[6] == 'r' && status_str[7] == 'g' && status_str[8] == 'i'
-        && status_str[9] == 'n' && status_str[1] == 'g';
+        && status_str[9] == 'n' && status_str[10] == 'g';
 }
 
 char get_battery_percentage()
